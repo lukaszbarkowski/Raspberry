@@ -27,9 +27,10 @@ def hello():
 @app.route("/add_user", methods=['POST'])
 def add_user():
     if request.method == 'POST':
-        req = request.json
-        addNewUser(req.uid, req.name, req.surname)
-        Response(mimetype="application/json", status=200)
+        req = request.get_json()
+        print(req)
+        addNewUser(req['uid'], req['name'], req['surname'])
+        return Response(mimetype="application/json", status=200)
 
 
 @app.route("/get_users")

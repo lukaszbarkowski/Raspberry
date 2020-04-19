@@ -5,20 +5,15 @@ GPIO.setmode(GPIO.BOARD)
 
 rdr = RFID()
 util = rdr.util()
-
+util.debug = True
 print("Start")
 while True:
+    print("wait")
     rdr.wait_for_tag()
     (error, tag_type) = rdr.request()
     if not error:
         (error, uid) = rdr.anticoll()
-        if not error:
-            util.dump()
-            if not rdr.select_tag(uid):
-                if not rdr.card_auth(rdr.auth_a, 10, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], uid):
-                    # This will print something like (False, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-                    # Always stop crypto1 when done working
-                    rdr.stop_crypto()
+        print(uid)
 
 # Calls GPIO cleanup
 rdr.cleanup()

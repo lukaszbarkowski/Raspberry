@@ -9,6 +9,7 @@ from flask_cors import CORS
 from db import addNewUser, getAllUsers
 
 GPIO.setmode(GPIO.BOARD)
+GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)
 
 rdr = RFID()
 util = rdr.util()
@@ -17,6 +18,17 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, async_mode="threading", path='/ws',
                     logging=True, engineio_logger=True, cors_allowed_origins='*')
+
+readMode = "default"
+
+
+def switchMode(mode):
+    global readMode
+    if mode == "newUser":
+        GPIO.output(8, GPIO.HIGH)
+    elif mode == "default":
+        GPIO.output(8, GPIO.LOW)
+    readMode = mode
 
 
 @app.route("/hello")
@@ -29,8 +41,11 @@ def add_user():
     if request.method == 'POST':
         req = request.get_json()
         print(req)
-        addNewUser(req['uid'], req['name'], req['surname'])
-        return Response(mimetype="application/json", status=200)
+        userAdded = addNewUser(req['uid'], req['name'], req['surname'])
+        if userAdded:
+            return Response(mimetype="application/json", status=201)
+        else:
+            return Response(mimetype="application/json", status=400)
 
 
 @app.route("/get_users")
@@ -40,13 +55,13 @@ def get_users():
 
 
 @socketio.on("connect")
-def testConnection():
-    print("Got something!")
+def onConnect():
+    switchMode("newUser")
 
 
-# set to true when sensor detects card
-# set to false when saving user
-isTagSet = False
+@socketio.on("disconnect")
+def onConnect():
+    switchMode("default")
 
 
 def emitFromBackground(uid):
@@ -55,14 +70,15 @@ def emitFromBackground(uid):
 
 def read():
     while True:
-        global isTagSet
-        if not isTagSet:
+        global readMode
+        if readMode == "newUser":
             rdr.wait_for_tag()
             (error, tag_type) = rdr.request()
             if not error:
                 (error, uid) = rdr.anticoll()
-                isTagSet = True
                 emitFromBackground(uid)
+        else:
+
     rdr.cleanup()
 
 

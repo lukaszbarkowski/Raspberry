@@ -15,6 +15,14 @@ def addNewUser(uid, name, surname):
     try:
         db = getConnection()
         cursor = db.cursor()
+
+        checkQuery = "select * from cards where uid=%s"
+        cursor.execute(checkQuery, uid)
+        check = cursor.fetchall()
+        if len(check) > 0:
+            cursor.close()
+            db.close()
+            return False
         cardSql = "insert into cards (uid,status) values (%s, %s)"
         cursor.execute(cardSql, (uid, 100))
         insertId = cursor.lastrowid

@@ -12,30 +12,32 @@ def getConnection():
 
 
 def addNewUser(uid, name, surname):
-    try:
-        db = getConnection()
-        cursor = db.cursor()
-
-        checkQuery = "select * from cards where uid=%s"
-        cursor.execute(checkQuery, uid)
-        check = cursor.fetchall()
-        if len(check) > 0:
-            cursor.close()
-            db.close()
-            return False
-        cardSql = "insert into cards (uid,status) values (%s, %s)"
-        cursor.execute(cardSql, (uid, 100))
-        insertId = cursor.lastrowid
-        userSql = "insert into users (card_id,name,surname) values (%s,%s,%s)"
-        cursor.execute(userSql, (insertId, name, surname))
-
-        db.commit()
+    db = getConnection()
+    cursor = db.cursor()
+    checkQuery = "select card from users where card=" + str(uid)
+    cursor.execute(checkQuery)
+    check = cursor.fetchall()
+    print(check)
+    if len(check) > 0:
         cursor.close()
         db.close()
-        return True
-    except:
         return False
+    userSql = "insert into users (card,name,surname) values (%s,%s,%s)"
+    cursor.execute(userSql, (uid, name, surname))
+    db.commit()
+    cursor.close()
+    db.close()
+    return True
 
+def removeUserById(id):
+    db = getConnection()
+    cursor = db.cursor()
+    removeQueey = "delete from users where id = %s"
+    cursor.execute(removeQuery,(id))
+    db.commit()
+    cursor.close()
+    db.close()
+    return True
 
 def getAllUsers():
     db = getConnection()

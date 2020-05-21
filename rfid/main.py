@@ -6,7 +6,7 @@ from pirc522 import RFID
 import _thread
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
-from db import addNewUser, getAllUsers
+from db import addNewUser, getAllUsers, removeUserById
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)
@@ -30,17 +30,21 @@ def switchMode(mode):
         GPIO.output(8, GPIO.LOW)
     readMode = mode
 
+@app.route("/remove_user/<id>",methods=['DELETE'])
+def remove_user(user_id):
+    if request.method == 'DELETE':
+        isUserRemoved = removeUserById(user_id)
+        if isUserRemoved:
+            return Response(mimetype="application/json",status=204)
+        else:
+            return Response(mimetype="application/json",status="400"
 
-@app.route("/hello")
-def hello():
-    return Response('{"someData":"Hello World!"}', mimetype="application/json", status=200)
 
 
 @app.route("/add_user", methods=['POST'])
 def add_user():
     if request.method == 'POST':
         req = request.get_json()
-        print(req)
         userAdded = addNewUser(req['uid'], req['name'], req['surname'])
         if userAdded:
             return Response(mimetype="application/json", status=201)
@@ -48,7 +52,7 @@ def add_user():
             return Response(mimetype="application/json", status=400)
 
 
-@app.route("/get_users")
+@app.route("/all_users")
 def get_users():
     users = getAllUsers()
     return jsonify(users)
@@ -77,8 +81,6 @@ def read():
             if not error:
                 (error, uid) = rdr.anticoll()
                 emitFromBackground(uid)
-        else:
-
     rdr.cleanup()
 
 

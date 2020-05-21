@@ -30,22 +30,23 @@ def switchMode(mode):
         GPIO.output(8, GPIO.LOW)
     readMode = mode
 
-@app.route("/remove_user/<id>",methods=['DELETE'])
+
+@app.route("/remove_user/<id>", methods=['DELETE'])
 def remove_user(user_id):
     if request.method == 'DELETE':
         isUserRemoved = removeUserById(user_id)
         if isUserRemoved:
-            return Response(mimetype="application/json",status=204)
+            return Response(mimetype="application/json", status=204)
         else:
-            return Response(mimetype="application/json",status="400"
+            return Response(mimetype="application/json", status=400)
 
 
 
 @app.route("/add_user", methods=['POST'])
 def add_user():
     if request.method == 'POST':
-        req = request.get_json()
-        userAdded = addNewUser(req['uid'], req['name'], req['surname'])
+        req=request.get_json()
+        userAdded=addNewUser(req['uid'], req['name'], req['surname'])
         if userAdded:
             return Response(mimetype="application/json", status=201)
         else:
@@ -54,7 +55,7 @@ def add_user():
 
 @app.route("/all_users")
 def get_users():
-    users = getAllUsers()
+    users=getAllUsers()
     return jsonify(users)
 
 
@@ -77,9 +78,9 @@ def read():
         global readMode
         if readMode == "newUser":
             rdr.wait_for_tag()
-            (error, tag_type) = rdr.request()
+            (error, tag_type)=rdr.request()
             if not error:
-                (error, uid) = rdr.anticoll()
+                (error, uid)=rdr.anticoll()
                 emitFromBackground(uid)
     rdr.cleanup()
 

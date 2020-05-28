@@ -29,11 +29,26 @@ def addNewUser(uid, name, surname):
     db.close()
     return True
 
+def checkCard(uid):
+    db = getConnection()
+    cursor = db.cursor()
+    card_id = ''
+    for i in uid:
+        card_id = card_id + str(i)
+    checkQuery = "select * from users where card=" + card_id
+    cursor.execute(checkQuery)
+    check = cursor.fetchall()
+    cursor.close()
+    db.close()
+    if len(check)>0:
+        return True
+    return False
+
 def removeUserById(id):
     db = getConnection()
     cursor = db.cursor()
-    removeQueey = "delete from users where id = %s"
-    cursor.execute(removeQuery,(id))
+    removeQuery = "delete from users where id =" + str(id)
+    cursor.execute(removeQuery)
     db.commit()
     cursor.close()
     db.close()
